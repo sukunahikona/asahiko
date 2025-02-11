@@ -23,7 +23,7 @@
             },
             {
                 "name" :"POSTGRES_DB_HOST",
-                "value" :"asahiko-rds-cluster.cluster-c3gy2xrdtsw8.ap-northeast-1.rds.amazonaws.com"
+                "value" :"${rds-endpoint}"
             },
             {
                 "name" :"RAILS_ENV",

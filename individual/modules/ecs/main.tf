@@ -123,6 +123,7 @@ data "template_file" "task-def-app" {
   template = "${file("${path.module}/task_defs/task_def_app.json")}"
 
   vars = {
+    rds-endpoint = "${var.aws_rds_endpoint}"
     log-group = aws_cloudwatch_log_group.app.name
     image-url = "${var.aws_ecr_repository_main_repository_url}:latest"
   }

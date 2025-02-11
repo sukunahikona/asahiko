@@ -61,6 +61,11 @@ data "aws_acm_certificate" "main" {
   domain   = "*.${var.infra-basic-settings.name}.${var.infra-basic-settings.domain-name}"
 }
 
+# commonで作成したRDS取得
+data "aws_rds_cluster" "main" {
+    cluster_identifier = "${var.infra-basic-settings.name}-rds-cluster"
+}
+
 # region取得
 data "aws_region" "current" {}
 
@@ -96,4 +101,5 @@ module "ecs" {
     aws_ecr_repository_main_repository_url = module.ecr.aws_ecr_repository_main_repository_url
     alb_tg_main_arn = module.alb.alb_tg_main_arn
     aws_lb_listener_https_arn = module.alb.aws_lb_listener_https_arn
+    aws_rds_endpoint = data.aws_rds_cluster.main.endpoint
 }
