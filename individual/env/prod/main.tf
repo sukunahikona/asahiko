@@ -66,6 +66,13 @@ data "aws_rds_cluster" "main" {
     cluster_identifier = "${var.infra-basic-settings.name}-rds-cluster"
 }
 
+data "aws_ssm_parameter" "rds_user_name" {
+  name = "/${var.infra-basic-settings.name}/rds/user_name"
+}
+data "aws_ssm_parameter" "rds_password" {
+  name = "/${var.infra-basic-settings.name}/rds/password"
+}
+
 # region取得
 data "aws_region" "current" {}
 
@@ -99,7 +106,10 @@ module "ecs" {
     infra-basic-settings    = var.infra-basic-settings
     private_subnet_ids     = [for subnet in data.aws_subnet.private : subnet.id]
     aws_ecr_repository_main_repository_url = module.ecr.aws_ecr_repository_main_repository_url
+    aws_ecr_repository_web_repository_url = module.ecr.aws_ecr_repository_web_repository_url
     alb_tg_main_arn = module.alb.alb_tg_main_arn
     aws_lb_listener_https_arn = module.alb.aws_lb_listener_https_arn
     aws_rds_endpoint = data.aws_rds_cluster.main.endpoint
+    rds_user_name = data.aws_ssm_parameter.rds_user_name.value
+    rds_password = data.aws_ssm_parameter.rds_password.value
 }

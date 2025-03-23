@@ -1,54 +1,48 @@
-[
-    {
-        "name": "app",
-        "image": "${image-url}",
-        "cpu": 128,
-        "memory": 256,
-        "essential": true,
-        "portMappings":
-            [
-                {
-                    "containerPort": 8080,
-                    "hostPort"     : 8080
-                }
-            ],
-        "environment" :[
+{
+    "name": "app",
+    "image": "${image-url}",
+    "cpu": 128,
+    "memory": 256,
+    "essential": true,
+    "portMappings":
+        [
             {
-                "name" :"POSTGRES_USER",
-                "value" :"asahiko"
-            },
-            {
-                "name" :"POSTGRES_PASSWORD",
-                "value" :"Hogepiyo"
-            },
-            {
-                "name" :"POSTGRES_DB_HOST",
-                "value" :"${rds-endpoint}"
-            },
-            {
-                "name" :"RAILS_ENV",
-                "value" :"production"
-            },
-            { 
-                "name" :"SECRET_KEY_BASE",
-                "value" :"Hogepiyo"
-            },
-            { 
-                "name" :"PORT",
-                "value" :"8080"
-            },
-            {
-                "name" :"RAILS_LOG_TO_STDOUT",
-                "value" :"true"
+                "containerPort": 3000,
+                "hostPort"     : 3000
             }
         ],
-        "logConfiguration" :{
-            "logDriver": "awslogs",
-            "options": {
-                "awslogs-region" : "ap-northeast-1",
-                "awslogs-group" : "${log-group}",
-                "awslogs-stream-prefix" : "ecs"
-            }
+    "environment" :[
+        {
+            "name" :"POSTGRES_USER",
+            "value" :"${rds-user}"
+        },
+        {
+            "name" :"POSTGRES_PASSWORD",
+            "value" :"${rds-password}"
+        },
+        {
+            "name" :"POSTGRES_DB_HOST",
+            "value" :"${rds-endpoint}"
+        },
+        {
+            "name" :"RAILS_ENV",
+            "value" :"production"
+        },
+        { 
+            "name" :"SECRET_KEY_BASE",
+            "value" :"Hogepiyo"
+        },
+        {
+            "name" :"RAILS_LOG_TO_STDOUT",
+            "value" :"true"
         }
-    }    
-]
+    ],
+    "logConfiguration" :{
+        "logDriver": "awslogs",
+        "options": {
+            "awslogs-region" : "ap-northeast-1",
+            "awslogs-group" : "${log-group}",
+            "awslogs-stream-prefix" : "ecs"
+        }
+    }
+}
