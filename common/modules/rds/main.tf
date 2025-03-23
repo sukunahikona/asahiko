@@ -1,3 +1,14 @@
+# parameter store
+data "aws_ssm_parameter" "rds_db_name" {
+  name = "/${var.infra-basic-settings.name}/rds/db_name"
+}
+data "aws_ssm_parameter" "rds_user_name" {
+  name = "/${var.infra-basic-settings.name}/rds/user_name"
+}
+data "aws_ssm_parameter" "rds_password" {
+  name = "/${var.infra-basic-settings.name}/rds/password"
+}  
+
 locals {
     ts = formatdate("YYYYMMDDhhmmss", timestamp())
 }
@@ -43,10 +54,10 @@ resource "aws_rds_cluster" "main" {
   cluster_identifier                  = "${var.infra-basic-settings.name}-rds-cluster"
   engine                              = "aurora-postgresql"
   engine_version                      = var.rds-settings.engine-version
-  master_username                     = var.rds-settings.db-username
-  master_password                     = var.rds-settings.db-password
+  master_username                     = data.aws_ssm_parameter.rds_user_name.value
+  master_password                     = data.aws_ssm_parameter.rds_password.value
   port                                = 5432
-  database_name                       = var.rds-settings.db-name
+  database_name                       = data.aws_ssm_parameter.rds_db_name.value
   vpc_security_group_ids              = [aws_security_group.sg_rds.id]
   db_subnet_group_name                = aws_db_subnet_group.rds.name
   db_cluster_parameter_group_name     = aws_rds_cluster_parameter_group.main.name
@@ -90,11 +101,4 @@ resource "aws_db_parameter_group" "main" {
     name  = "shared_preload_libraries"
     value = "pg_stat_statements,pg_hint_plan"
   }
-}
-
-# systems manager store param for rds cluster endpiont
-resource "aws_ssm_parameter" "rds_cluster_endpoint" {
-  name  = "/${var.infra-basic-settings.name}/rds_cluster_endpoint"
-  type  = "String"
-  value = aws_rds_cluster.main.endpoint
 }

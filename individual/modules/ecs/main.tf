@@ -24,15 +24,6 @@ resource "aws_security_group_rule" "ecs_http80" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group_rule" "ecs_http8080" {
-  from_port         = 8080
-  protocol          = "tcp"
-  security_group_id = aws_security_group.sg_ecs.id
-  to_port           = 8080
-  type              = "ingress"
-  cidr_blocks       = ["0.0.0.0/0"]
-}
-
 resource "aws_security_group_rule" "ecs_https" {
   from_port         = 443
   protocol          = "tcp"
@@ -103,6 +94,9 @@ resource "aws_iam_policy_attachment" "attach" {
 resource "aws_cloudwatch_log_group" "app" {
   name = "${var.infra-basic-settings.name}-log-app-group"
 }
+resource "aws_cloudwatch_log_group" "web" {
+  name = "${var.infra-basic-settings.name}-log-web-group"
+}
 
 # ecs_cluster
 resource "aws_ecs_cluster" "main" {
@@ -126,6 +120,16 @@ data "template_file" "task-def-app" {
     rds-endpoint = "${var.aws_rds_endpoint}"
     log-group = aws_cloudwatch_log_group.app.name
     image-url = "${var.aws_ecr_repository_main_repository_url}:latest"
+    rds-user = "${var.rds_user_name}"
+    rds-password = "${var.rds_password}"
+  }
+}
+data "template_file" "task-def-web" {
+  template = "${file("${path.module}/task_defs/task_def_web.json")}"
+
+  vars = {
+    log-group = aws_cloudwatch_log_group.web.name
+    image-url = "${var.aws_ecr_repository_web_repository_url}:latest"
   }
 }
 
@@ -138,7 +142,7 @@ resource "aws_ecs_task_definition" "main" {
   execution_role_arn       = aws_iam_role.ecs_deploy.arn
   task_role_arn            = aws_iam_role.ecs_deploy.arn
 
-  container_definitions = "${data.template_file.task-def-app.rendered}"
+  container_definitions = "[${data.template_file.task-def-app.rendered},${data.template_file.task-def-web.rendered}]"
 }  
 
 # ecs_service
@@ -160,8 +164,8 @@ resource "aws_ecs_service" "main" {
 
   load_balancer {
     target_group_arn = var.alb_tg_main_arn
-    container_name   = "app"
-    container_port   = 8080
+    container_name   = "web"
+    container_port   = 80
   }
 
   deployment_controller {
