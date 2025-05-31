@@ -8,3 +8,4 @@ variable "aws_lb_listener_https_arn" {}
 variable "aws_rds_endpoint" {}
 variable "rds_user_name" {}
 variable "rds_password" {}
+variable "secret_key" {}
