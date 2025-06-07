@@ -1,6 +1,8 @@
 # S3バケットを作成します
 resource "aws_s3_bucket" "public_bucket" {
   bucket = "${var.infra-basic-settings.name}-public-bucket"
+
+  force_destroy = true
 }
 
 
