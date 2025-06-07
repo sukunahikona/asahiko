@@ -1,0 +1,1 @@
+variable "infra-basic-settings" {}

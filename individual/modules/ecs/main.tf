@@ -46,25 +46,6 @@ resource "aws_iam_role" "ecs_deploy" {
       },
     ]
   })
-  
-  inline_policy {
-    name = "allow_logs"
-    policy = jsonencode({
-      Version = "2012-10-17"
-      Statement = [
-        {
-          Effect = "Allow"
-          Action = [
-            "logs:CreateLogStream",
-            "logs:DescribeLogGroups",
-            "logs:DescribeLogStreams",
-            "logs:PutLogEvents",
-          ],
-          Resource = "*"
-        }
-      ]
-    })
-  }
 }
 
 resource "aws_iam_policy" "ecs_deploy_policy" {
@@ -84,10 +65,36 @@ resource "aws_iam_policy" "ecs_deploy_policy" {
   })
 }
 
-resource "aws_iam_policy_attachment" "attach" {
+resource "aws_iam_policy" "ecs_log_policy" {
+  name = "ecs_log_policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogStream",
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams",
+          "logs:PutLogEvents",
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy_attachment" "attach_ecr_policy" {
   name       = "iam-attach"
   roles      = ["${aws_iam_role.ecs_deploy.name}"]
   policy_arn = aws_iam_policy.ecs_deploy_policy.arn
+}
+
+resource "aws_iam_policy_attachment" "attach_log_policy" {
+  name       = "iam-attach"
+  roles      = ["${aws_iam_role.ecs_deploy.name}"]
+  policy_arn = aws_iam_policy.ecs_log_policy.arn
 }
 
 # log_group
@@ -122,6 +129,7 @@ data "template_file" "task-def-app" {
     image-url = "${var.aws_ecr_repository_main_repository_url}:latest"
     rds-user = "${var.rds_user_name}"
     rds-password = "${var.rds_password}"
+    secret-key = "${var.secret_key}"
   }
 }
 data "template_file" "task-def-web" {

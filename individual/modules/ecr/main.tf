@@ -5,7 +5,7 @@ locals {
 }
 
 
-resource "aws_ecr_repository" "main" {
+resource "aws_ecr_repository" "app" {
   name                 = var.ecr-name
   image_tag_mutability = "MUTABLE"
   # imageが残ってても強制的にリポジトリ削除
@@ -14,7 +14,7 @@ resource "aws_ecr_repository" "main" {
     scan_on_push = true
   }
 }
-resource "null_resource" "main" {
+resource "null_resource" "app" {
   triggers = {
     // MD5 チェックし、トリガーにする
     file_content_md5 = md5(file("${path.module}/dockerbuild.sh"))
@@ -28,7 +28,7 @@ resource "null_resource" "main" {
     environment = {
       AWS_REGION       = var.aws-region
       AWS_ACCOUNT_ID   = local.account_id
-      REPO_URL         = aws_ecr_repository.main.repository_url
+      REPO_URL         = aws_ecr_repository.app.repository_url
       CONTAINER_NAME   = var.container-name
       DOCKER_FILE_PATH = "${path.module}/${var.app-name}"
     }

@@ -72,6 +72,9 @@ data "aws_ssm_parameter" "rds_user_name" {
 data "aws_ssm_parameter" "rds_password" {
   name = "/${var.infra-basic-settings.name}/rds/password"
 }
+data "aws_ssm_parameter" "secret_key" {
+  name = "/${var.infra-basic-settings.name}/rails/secret_key"
+}
 
 # region取得
 data "aws_region" "current" {}
@@ -112,4 +115,5 @@ module "ecs" {
     aws_rds_endpoint = data.aws_rds_cluster.main.endpoint
     rds_user_name = data.aws_ssm_parameter.rds_user_name.value
     rds_password = data.aws_ssm_parameter.rds_password.value
+    secret_key = data.aws_ssm_parameter.secret_key.value
 }

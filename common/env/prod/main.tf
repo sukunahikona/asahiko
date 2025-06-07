@@ -5,8 +5,8 @@ module "vpc" {
 }
 
 module "certificate" {
-  source           = "../../modules/certificate"
-  infra-basic-settings = var.infra-basic-settings
+    source           = "../../modules/certificate"
+    infra-basic-settings = var.infra-basic-settings
 }
 
 module "ec2" {

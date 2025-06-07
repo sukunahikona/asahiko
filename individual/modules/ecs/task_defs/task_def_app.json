@@ -25,12 +25,16 @@
             "value" :"${rds-endpoint}"
         },
         {
+            "name" :"POSTGRES_DB_PORT",
+            "value" :"5432"
+        },
+        {
             "name" :"RAILS_ENV",
             "value" :"production"
         },
         { 
             "name" :"SECRET_KEY_BASE",
-            "value" :"Hogepiyo"
+            "value" :"${secret-key}"
         },
         {
             "name" :"RAILS_LOG_TO_STDOUT",

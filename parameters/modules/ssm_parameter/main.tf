@@ -16,3 +16,9 @@ resource "aws_ssm_parameter" "db_name" {
   type  = "String"
   value = "${var.infra-basic-settings.name}db"
 }
+
+resource "aws_ssm_parameter" "secret_key" {
+  name  = "/${var.infra-basic-settings.name}/rails/secret_key"
+  type  = "SecureString"
+  value = "dummy"
+}
