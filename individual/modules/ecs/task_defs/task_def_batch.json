@@ -1,0 +1,45 @@
+{
+    "name": "batch",
+    "image": "${image-url}",
+    "cpu": 128,
+    "memory": 256,
+    "essential": true,
+    "environment" :[
+        {
+            "name" :"POSTGRES_USER",
+            "value" :"${rds-user}"
+        },
+        {
+            "name" :"POSTGRES_PASSWORD",
+            "value" :"${rds-password}"
+        },
+        {
+            "name" :"POSTGRES_DB_HOST",
+            "value" :"${rds-endpoint}"
+        },
+        {
+            "name" :"POSTGRES_DB_PORT",
+            "value" :"5432"
+        },
+        {
+            "name" :"RAILS_ENV",
+            "value" :"production"
+        },
+        { 
+            "name" :"SECRET_KEY_BASE",
+            "value" :"${secret-key}"
+        },
+        {
+            "name" :"RAILS_LOG_TO_STDOUT",
+            "value" :"true"
+        }
+    ],
+    "logConfiguration" :{
+        "logDriver": "awslogs",
+        "options": {
+            "awslogs-region" : "ap-northeast-1",
+            "awslogs-group" : "${log-group}",
+            "awslogs-stream-prefix" : "ecs"
+        }
+    }
+}
