@@ -9,3 +9,5 @@ variable "aws_rds_endpoint" {}
 variable "rds_user_name" {}
 variable "rds_password" {}
 variable "secret_key" {}
+variable "ecr_app_push_complete" {}
+variable "ecr_web_push_complete" {}

@@ -116,4 +116,6 @@ module "ecs" {
     rds_user_name = data.aws_ssm_parameter.rds_user_name.value
     rds_password = data.aws_ssm_parameter.rds_password.value
     secret_key = data.aws_ssm_parameter.secret_key.value
+    ecr_app_push_complete = module.ecr.ecr_app_push_complete
+    ecr_web_push_complete = module.ecr.ecr_web_push_complete
 }
