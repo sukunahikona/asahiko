@@ -98,7 +98,7 @@ module "alb" {
 module "ecr" {
     source         = "../../modules/ecr"
     ecr-name       = var.ecr-settings.ecr-name
-    aws-region     = data.aws_region.current.name
+    aws-region     = data.aws_region.current.id
     app-name       = var.ecr-settings.app-name
     container-name = var.ecr-settings.container-name
 }
