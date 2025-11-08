@@ -108,7 +108,7 @@ resource "aws_iam_policy_attachment" "attach_ecr_policy_at_deploy" {
   policy_arn = aws_iam_policy.ecs_deploy_policy.arn
 }
 
-resource "aws_iam_policy_attachment" "attach_log_policy_at_deply" {
+resource "aws_iam_policy_attachment" "attach_log_policy_at_deploy" {
   name       = "iam-attach"
   roles      = ["${aws_iam_role.ecs_deploy.name}"]
   policy_arn = aws_iam_policy.ecs_log_policy.arn

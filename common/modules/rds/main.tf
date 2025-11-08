@@ -7,10 +7,49 @@ data "aws_ssm_parameter" "rds_user_name" {
 }
 data "aws_ssm_parameter" "rds_password" {
   name = "/${var.infra-basic-settings.name}/rds/password"
-}  
+}
 
 locals {
     ts = formatdate("YYYYMMDDhhmmss", timestamp())
+    # Extract major version from engine version (e.g., "16.1" -> "16")
+    postgresql_major_version = split(".", var.rds-settings.engine-version)[0]
+}
+
+# IAM Role for RDS Enhanced Monitoring
+resource "aws_iam_role" "aurora_monitoring" {
+  name = "${var.infra-basic-settings.name}-rds-monitoring-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "monitoring.rds.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name = "${var.infra-basic-settings.name}-rds-monitoring-role"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "aurora_monitoring" {
+  role       = aws_iam_role.aurora_monitoring.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+}
+
+# CloudWatch Log Groups for RDS
+resource "aws_cloudwatch_log_group" "postgresql" {
+  name              = "/aws/rds/cluster/${var.infra-basic-settings.name}-rds-cluster/postgresql"
+  retention_in_days = 7
+
+  tags = {
+    Name = "${var.infra-basic-settings.name}-rds-postgresql-logs"
+  }
 }
 
 # security group
@@ -63,15 +102,27 @@ resource "aws_rds_cluster" "main" {
   db_cluster_parameter_group_name     = aws_rds_cluster_parameter_group.main.name
   iam_database_authentication_enabled = true
 
+  # CloudWatch Logs exports
+  enabled_cloudwatch_logs_exports = ["postgresql"]
+
   #skip_final_snapshot = true
   final_snapshot_identifier  = "${var.infra-basic-settings.name}-snapshot-${local.ts}"
   snapshot_identifier        = "${var.rds-settings.snapshot-identifier}"
   apply_immediately   = true
+
+  depends_on = [
+    aws_cloudwatch_log_group.postgresql
+  ]
 }
 
 resource "aws_rds_cluster_parameter_group" "main" {
   name   = "${var.infra-basic-settings.name}-rds-cluster-parameter-grp"
-  family = "aurora-postgresql16"
+  family = "aurora-postgresql${local.postgresql_major_version}"
+
+  parameter {
+    name  = "log_statement"
+    value = "all"
+  }
 }
 
 resource "aws_rds_cluster_instance" "main" {
@@ -86,7 +137,9 @@ resource "aws_rds_cluster_instance" "main" {
   db_subnet_group_name    = aws_db_subnet_group.rds.name
   db_parameter_group_name = aws_db_parameter_group.main.name
 
-  #monitoring_role_arn = aws_iam_role.aurora_monitoring.arn
+  # Enhanced Monitoring
+  monitoring_role_arn = aws_iam_role.aurora_monitoring.arn
+  monitoring_interval = 5
   #monitoring_interval = 60
 
   publicly_accessible = true
@@ -94,7 +147,7 @@ resource "aws_rds_cluster_instance" "main" {
 
 resource "aws_db_parameter_group" "main" {
   name   = "${var.infra-basic-settings.name}-rds-parameter-grp"
-  family = "aurora-postgresql16"
+  family = "aurora-postgresql${local.postgresql_major_version}"
 
   parameter {
     apply_method = "pending-reboot"
